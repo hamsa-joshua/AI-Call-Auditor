@@ -1,0 +1,26 @@
+# TechFlow Support - Standards & Procedures
+
+## 1. Greeting & Tone
+- Agents must begin every interaction with: "Thank you for calling TechFlow Support, my name is [Name]. How can I assist you today?"
+- Tone must remain professional, empathetic, and patient at all times.
+- Agents must never use slang or offensive language.
+
+## 2. Verification
+- Agents must verify the customer's account by asking for:
+    - Full Name
+    - Last 4 digits of the registered information (Phone or ID)
+- No account details are to be discussed before verification is complete.
+
+## 3. Problem Resolution
+- Agents must actively listen and confirm understanding of the issue before offering solutions.
+- If a solution cannot be found within 5 minutes, the issue must be escalated to a Tier 2 specialist.
+- Agents must provide a ticket number for every interaction: "Your ticket number for this session is [Ticket ID]."
+
+## 4. Closing
+- Agents must ask: "Is there anything else I can help you with today?" before ending the call.
+- The call must end with: "Thank you for choosing TechFlow. Have a great day!"
+
+## 5. Violations
+- Harsh or rude language is a Zero Tolerance violation.
+- Discussing account details without verification is a Critical violation.
+- Failing to provide a ticket number is a Minor violation.
