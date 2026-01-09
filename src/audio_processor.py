@@ -3,6 +3,8 @@ import json
 import os
 import senko 
 
+# Audio Processor Module
+
 class AudioProcessor:
     def __init__(self, model_size="base", device="auto"):
         """
