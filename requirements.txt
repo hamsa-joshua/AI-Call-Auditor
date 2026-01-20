@@ -1,13 +1,19 @@
-# Core
+#Core
 streamlit>=1.30.0
 python-dotenv>=1.0.0
-pandas>=2.1.0
+pandas>=2.0.0
 
-# Audio Processing (CPU Friendly)
+#Audio Processing
 openai-whisper
-pydub
+pydub 
+webrtcvad
+soundfile
+resemblyzer
+scikit-learn
+scipy
+numpy
 
-# LLM & RAG
+#LLM & RAG
 google-generativeai
 langchain
 langchain-community
@@ -15,11 +21,10 @@ langchain-text-splitters
 faiss-cpu
 sentence-transformers
 
-# Reporting
+#Reporting
 fpdf
-openpyxl
+openpyxl 
 
-# Utils
+#Utils
 python-multipart
 matplotlib
-
