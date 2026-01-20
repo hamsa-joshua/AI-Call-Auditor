@@ -4,8 +4,16 @@ python-dotenv>=1.0.0
 pandas>=2.1.0
 
 # Audio Processing (CPU Friendly)
+# Audio Processing (CPU Friendly)
+faster-whisper
 openai-whisper
 pydub
+webrtcvad
+soundfile
+resemblyzer
+scikit-learn
+scipy
+numpy
 
 # LLM & RAG
 google-generativeai
@@ -22,4 +30,3 @@ openpyxl
 # Utils
 python-multipart
 matplotlib
-
