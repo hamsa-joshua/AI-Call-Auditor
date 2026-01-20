@@ -1,13 +1,9 @@
-import whisper
+from faster_whisper import WhisperModel
 import json
 import os
-import senko 
 
 class AudioProcessor:
     def __init__(self, model_size="base", device="auto"):
-        """
-        Initialize Whisper and Senko models.
-        """
         if device == "auto":
             try:
                 import torch
@@ -16,94 +12,40 @@ class AudioProcessor:
                 self.device = "cpu"
         else:
             self.device = device
-            
+
         print(f"Using device: {self.device}")
-        
-        # Initialize Whisper
-        print(f"Loading Whisper model: {model_size}...")
-        self.model = whisper.load_model(model_size, device=self.device)
-        print("Whisper model loaded.")
-        
-        # Initialize Senko
-        print("Loading Senko model...")
-        self.diarizer = senko.Diarizer(device=self.device, warmup=True, quiet=False)
-        print("Senko model loaded.")
+        # faster-whisper uses 'cuda' or 'cpu', matching our logic
+        self.model = WhisperModel(model_size, device=self.device, compute_type="int8") # int8 is faster on CPU
+        print("Faster-Whisper model loaded")
 
     def process_audio(self, file_path):
-        """
-        Process audio file: Transcribe & Diarize using user's specific logic.
-        """
         if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Audio file not found: {file_path}")
+            raise FileNotFoundError(file_path)
 
-        # Check/Convert Audio if needed
-        # Some WAVs miss RIFF headers or are raw PCM that Whisper/Senko dislikes.
-        # We try to load it with pydub and export as a clean WAV.
-        try:
-             # Basic check: verify file header or try lightweight load
-             # But easiest is just to wrap the critical logic below in try-except and convert if it fails
-             pass
-        except:
-             pass
+        segments, info = self.model.transcribe(
+            file_path,
+            vad_filter=True,    
+            vad_parameters=dict(min_silence_duration_ms=500)
+        )
 
-        # 1. Diarization (Senko)
-        print(f"Diarizing {file_path}...")
-        try:
-             dia_result = self.diarizer.diarize(file_path, generate_colors=False)
-        except Exception as e:
-             # Check for RIFF header error OR the specific 16kHz format error
-             err_msg = str(e).lower()
-             if "riff" in err_msg or "header" in err_msg or "correct format" in err_msg or "16khz" in err_msg:
-                  print("Audio format issue (Header or 16kHz/Mono mismatch) detected. Converting...")
-                  from pydub import AudioSegment
-                  
-                  # Load and enforce 16kHz Mono
-                  audio = AudioSegment.from_file(file_path)
-                  audio = audio.set_frame_rate(16000)
-                  audio = audio.set_channels(1)
-                  
-                  file_path = file_path.replace(".wav", "_fixed.wav").replace(".mp3", "_fixed.wav")
-                  if not file_path.endswith("_fixed.wav"):
-                       file_path += "_fixed.wav"
-                       
-                  audio.export(file_path, format="wav")
-                  print(f"Converted to {file_path}. Retrying...")
-                  
-                  # Retry with fixed file
-                  dia_result = self.diarizer.diarize(file_path, generate_colors=False)
-             else:
-                  raise e
-        
-        senko_segments = dia_result["merged_segments"] # User's code key
+        transcript = []
+        speaker_toggle = 0
 
-        # 2. Transcription (Whisper)
-        print(f"Transcribing {file_path}...")
-        whisper_result = self.model.transcribe(file_path)
+        for seg in segments:
+            # simple speaker alternation heuristic
+            speaker = "Employee" if speaker_toggle % 2 == 0 else "Customer"
+            speaker_toggle += 1
 
-        # 3. Merge (User's Midpoint Logic)
-        diarized_transcript = []
-
-        for seg in whisper_result["segments"]:
-            mid_time = (seg["start"] + seg["end"]) / 2
-
-            # Find speaker
-            speaker_label = "Unknown"
-            for s in senko_segments:
-                # User logic: check if midpoint is within senko segment
-                if s["start"] <= mid_time <= s["end"]:
-                    speaker_label = s["speaker"]
-                    break 
-
-            diarized_transcript.append({
-                "start": seg["start"],
-                "end": seg["end"],
-                "speaker": speaker_label,
-                "text": seg["text"].strip()
+            transcript.append({
+                "start": round(seg.start, 2),
+                "end": round(seg.end, 2),
+                "speaker": speaker,
+                "text": seg.text.strip()
             })
 
-        return diarized_transcript
+        return transcript
 
-    def export_to_json(self, transcript_data, output_path):
-        with open(output_path, 'w') as f:
-            json.dump(transcript_data, f, indent=4)
+    def export_to_json(self, transcript, output_path):
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(transcript, f, indent=4, ensure_ascii=False)
         return output_path
