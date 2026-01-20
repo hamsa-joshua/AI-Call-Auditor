@@ -39,7 +39,7 @@ class RagEngine:
         """
         Loads the existing FAISS index.
         """
-        if os.path.exists(self.index_path):
+        if os.path.exists(self.index_path) and os.path.exists(os.path.join(self.index_path, "index.faiss")):
             self.vector_store = FAISS.load_local(
                 self.index_path, 
                 self.embeddings,
